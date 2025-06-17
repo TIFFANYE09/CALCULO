@@ -2,34 +2,42 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Resolver Desigualdades</title>
+  <title>Desigualdades Paso a Paso</title>
   <style>
-    body { font-family: Arial; padding: 20px; }
-    input, select, button { margin: 5px 0; padding: 5px; }
+    body { font-family: 'Segoe UI', sans-serif; padding: 20px; background-color: #f4f4f4; }
+    .contenedor { background-color: white; padding: 20px; border-radius: 10px; max-width: 500px; margin: auto; box-shadow: 0 0 10px #ccc; }
+    input, select, button { padding: 10px; margin: 10px 0; width: 100%; }
+    h2, h3 { color: #2c3e50; }
+    #pasos { background: #ecf0f1; padding: 10px; border-radius: 5px; }
   </style>
 </head>
 <body>
-  <h2>Resolución de Desigualdades</h2>
+  <div class="contenedor">
+    <h2>Resolver Desigualdades</h2>
 
-  <label for="tipo">Tipo de desigualdad:</label><br>
-  <select id="tipo">
-    <option value="lineal">Lineal (ax + b < c)</option>
-    <option value="cuadratica">Cuadrática (ax² + bx + c > 0)</option>
-  </select><br>
+    <label>Tipo:</label>
+    <select id="tipo">
+      <option value="lineal">Lineal: ax + b < c</option>
+      <option value="cuadratica">Cuadrática: ax² + bx + c > 0</option>
+    </select>
 
-  <label for="a">Coeficiente a:</label><br>
-  <input type="number" id="a"><br>
+    <label>Coeficiente a:</label>
+    <input type="number" id="a">
 
-  <label for="b">Coeficiente b:</label><br>
-  <input type="number" id="b"><br>
+    <label>Coeficiente b:</label>
+    <input type="number" id="b">
 
-  <label for="c">Término c:</label><br>
-  <input type="number" id="c"><br>
+    <label>Coeficiente c:</label>
+    <input type="number" id="c">
 
-  <button onclick="resolver()">Resolver</button>
+    <button onclick="resolver()">Calcular</button>
 
-  <h3>Resultado:</h3>
-  <p id="resultado"></p>
+    <h3>Resultado:</h3>
+    <div id="resultado"></div>
+
+    <h3>Paso a Paso:</h3>
+    <div id="pasos"></div>
+  </div>
 
   <script>
     function resolver() {
@@ -37,31 +45,44 @@
       const a = parseFloat(document.getElementById("a").value);
       const b = parseFloat(document.getElementById("b").value);
       const c = parseFloat(document.getElementById("c").value);
-      const res = document.getElementById("resultado");
+      const resultado = document.getElementById("resultado");
+      const pasos = document.getElementById("pasos");
+      pasos.innerHTML = "";
+      resultado.innerHTML = "";
+
+      if (isNaN(a) || isNaN(b) || isNaN(c)) {
+        resultado.innerHTML = "Por favor, completa todos los campos.";
+        return;
+      }
 
       if (tipo === "lineal") {
-        // ax + b < c
+        pasos.innerHTML += `Partimos de: ${a}x + ${b} < ${c}<br>`;
+        pasos.innerHTML += `Restamos ${b} en ambos lados: ${a}x < ${c - b}<br>`;
         const x = (c - b) / a;
-        let signo = a > 0 ? "<" : ">";
-        res.innerHTML = `Solución: x ${signo} ${x.toFixed(2)}`;
-      } else {
-        // ax² + bx + c > 0
-        const discriminante = b*b - 4*a*c;
-
-        if (discriminante < 0) {
-          res.innerHTML = a > 0
-            ? "La desigualdad se cumple para todos los valores de x (parábola siempre arriba)."
-            : "No hay solución real (parábola siempre abajo).";
+        if (a > 0) {
+          resultado.innerHTML = `Solución: x < ${x.toFixed(2)}`;
         } else {
-          const x1 = (-b + Math.sqrt(discriminante)) / (2*a);
-          const x2 = (-b - Math.sqrt(discriminante)) / (2*a);
+          resultado.innerHTML = `Solución: x > ${x.toFixed(2)} (recuerda que al dividir por un número negativo se invierte el signo)`;
+        }
+      } else {
+        pasos.innerHTML += `Resolviendo: ${a}x² + ${b}x + ${c} > 0<br>`;
+        const D = b*b - 4*a*c;
+        pasos.innerHTML += `Calculamos el discriminante: D = ${D}<br>`;
+        if (D < 0) {
+          resultado.innerHTML = a > 0
+            ? "La desigualdad se cumple para todo x (parábola siempre sobre el eje x)."
+            : "No se cumple para ningún x (parábola siempre debajo del eje x).";
+        } else {
+          const x1 = (-b + Math.sqrt(D)) / (2*a);
+          const x2 = (-b - Math.sqrt(D)) / (2*a);
           const menor = Math.min(x1, x2).toFixed(2);
           const mayor = Math.max(x1, x2).toFixed(2);
 
+          pasos.innerHTML += `Raíces: x₁ = ${menor}, x₂ = ${mayor}<br>`;
           if (a > 0) {
-            res.innerHTML = `Solución: x < ${menor} o x > ${mayor}`;
+            resultado.innerHTML = `Solución: x < ${menor} o x > ${mayor}`;
           } else {
-            res.innerHTML = `Solución: ${menor} < x < ${mayor}`;
+            resultado.innerHTML = `Solución: ${menor} < x < ${mayor}`;
           }
         }
       }
