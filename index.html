@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Resolver Desigualdades</title>
+  <style>
+    body { font-family: Arial; padding: 20px; }
+    input, select, button { margin: 5px 0; padding: 5px; }
+  </style>
+</head>
+<body>
+  <h2>Resolución de Desigualdades</h2>
+
+  <label for="tipo">Tipo de desigualdad:</label><br>
+  <select id="tipo">
+    <option value="lineal">Lineal (ax + b < c)</option>
+    <option value="cuadratica">Cuadrática (ax² + bx + c > 0)</option>
+  </select><br>
+
+  <label for="a">Coeficiente a:</label><br>
+  <input type="number" id="a"><br>
+
+  <label for="b">Coeficiente b:</label><br>
+  <input type="number" id="b"><br>
+
+  <label for="c">Término c:</label><br>
+  <input type="number" id="c"><br>
+
+  <button onclick="resolver()">Resolver</button>
+
+  <h3>Resultado:</h3>
+  <p id="resultado"></p>
+
+  <script>
+    function resolver() {
+      const tipo = document.getElementById("tipo").value;
+      const a = parseFloat(document.getElementById("a").value);
+      const b = parseFloat(document.getElementById("b").value);
+      const c = parseFloat(document.getElementById("c").value);
+      const res = document.getElementById("resultado");
+
+      if (tipo === "lineal") {
+        // ax + b < c
+        const x = (c - b) / a;
+        let signo = a > 0 ? "<" : ">";
+        res.innerHTML = `Solución: x ${signo} ${x.toFixed(2)}`;
+      } else {
+        // ax² + bx + c > 0
+        const discriminante = b*b - 4*a*c;
+
+        if (discriminante < 0) {
+          res.innerHTML = a > 0
+            ? "La desigualdad se cumple para todos los valores de x (parábola siempre arriba)."
+            : "No hay solución real (parábola siempre abajo).";
+        } else {
+          const x1 = (-b + Math.sqrt(discriminante)) / (2*a);
+          const x2 = (-b - Math.sqrt(discriminante)) / (2*a);
+          const menor = Math.min(x1, x2).toFixed(2);
+          const mayor = Math.max(x1, x2).toFixed(2);
+
+          if (a > 0) {
+            res.innerHTML = `Solución: x < ${menor} o x > ${mayor}`;
+          } else {
+            res.innerHTML = `Solución: ${menor} < x < ${mayor}`;
+          }
+        }
+      }
+    }
+  </script>
+</body>
+</html>
