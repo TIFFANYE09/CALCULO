@@ -2,91 +2,80 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Desigualdades Paso a Paso</title>
+  <title>Desigualdad Lineal con Gráfica</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
-    body { font-family: 'Segoe UI', sans-serif; padding: 20px; background-color: #f4f4f4; }
-    .contenedor { background-color: white; padding: 20px; border-radius: 10px; max-width: 500px; margin: auto; box-shadow: 0 0 10px #ccc; }
-    input, select, button { padding: 10px; margin: 10px 0; width: 100%; }
-    h2, h3 { color: #2c3e50; }
-    #pasos { background: #ecf0f1; padding: 10px; border-radius: 5px; }
+    body { font-family: Arial; padding: 20px; }
+    canvas { max-width: 600px; }
   </style>
 </head>
 <body>
-  <div class="contenedor">
-    <h2>Resolver Desigualdades</h2>
 
-    <label>Tipo:</label>
-    <select id="tipo">
-      <option value="lineal">Lineal: ax + b < c</option>
-      <option value="cuadratica">Cuadrática: ax² + bx + c > 0</option>
-    </select>
+  <h2>Resolver: 2x + 6 < 8</h2>
+  <p>Solución: Restamos 6 a ambos lados ⇒ 2x < 2 ⇒ x < 1</p>
+  <h3>Gráfica de la desigualdad</h3>
 
-    <label>Coeficiente a:</label>
-    <input type="number" id="a">
-
-    <label>Coeficiente b:</label>
-    <input type="number" id="b">
-
-    <label>Coeficiente c:</label>
-    <input type="number" id="c">
-
-    <button onclick="resolver()">Calcular</button>
-
-    <h3>Resultado:</h3>
-    <div id="resultado"></div>
-
-    <h3>Paso a Paso:</h3>
-    <div id="pasos"></div>
-  </div>
+  <canvas id="grafica" width="600" height="400"></canvas>
 
   <script>
-    function resolver() {
-      const tipo = document.getElementById("tipo").value;
-      const a = parseFloat(document.getElementById("a").value);
-      const b = parseFloat(document.getElementById("b").value);
-      const c = parseFloat(document.getElementById("c").value);
-      const resultado = document.getElementById("resultado");
-      const pasos = document.getElementById("pasos");
-      pasos.innerHTML = "";
-      resultado.innerHTML = "";
+    const ctx = document.getElementById('grafica').getContext('2d');
 
-      if (isNaN(a) || isNaN(b) || isNaN(c)) {
-        resultado.innerHTML = "Por favor, completa todos los campos.";
-        return;
-      }
+    // Valores del eje x
+    const xValores = [];
+    for (let x = -5; x <= 7; x += 0.1) {
+      xValores.push(x);
+    }
 
-      if (tipo === "lineal") {
-        pasos.innerHTML += `Partimos de: ${a}x + ${b} < ${c}<br>`;
-        pasos.innerHTML += `Restamos ${b} en ambos lados: ${a}x < ${c - b}<br>`;
-        const x = (c - b) / a;
-        if (a > 0) {
-          resultado.innerHTML = `Solución: x < ${x.toFixed(2)}`;
-        } else {
-          resultado.innerHTML = `Solución: x > ${x.toFixed(2)} (recuerda que al dividir por un número negativo se invierte el signo)`;
-        }
-      } else {
-        pasos.innerHTML += `Resolviendo: ${a}x² + ${b}x + ${c} > 0<br>`;
-        const D = b*b - 4*a*c;
-        pasos.innerHTML += `Calculamos el discriminante: D = ${D}<br>`;
-        if (D < 0) {
-          resultado.innerHTML = a > 0
-            ? "La desigualdad se cumple para todo x (parábola siempre sobre el eje x)."
-            : "No se cumple para ningún x (parábola siempre debajo del eje x).";
-        } else {
-          const x1 = (-b + Math.sqrt(D)) / (2*a);
-          const x2 = (-b - Math.sqrt(D)) / (2*a);
-          const menor = Math.min(x1, x2).toFixed(2);
-          const mayor = Math.max(x1, x2).toFixed(2);
+    // y = 2x + 6
+    const y1 = xValores.map(x => 2 * x + 6);
 
-          pasos.innerHTML += `Raíces: x₁ = ${menor}, x₂ = ${mayor}<br>`;
-          if (a > 0) {
-            resultado.innerHTML = `Solución: x < ${menor} o x > ${mayor}`;
-          } else {
-            resultado.innerHTML = `Solución: ${menor} < x < ${mayor}`;
+    // y = 8 (línea límite de la desigualdad)
+    const y2 = xValores.map(() => 8);
+
+    new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: xValores,
+        datasets: [
+          {
+            label: 'y = 2x + 6',
+            data: y1,
+            borderColor: 'blue',
+            borderWidth: 2,
+            fill: false,
+          },
+          {
+            label: 'y = 8',
+            data: y2,
+            borderColor: 'red',
+            borderWidth: 2,
+            borderDash: [5, 5],
+            fill: false,
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          x: {
+            title: { display: true, text: 'x' }
+          },
+          y: {
+            title: { display: true, text: 'y' }
+          }
+        },
+        plugins: {
+          title: {
+            display: true,
+            text: 'Gráfica de la desigualdad 2x + 6 < 8'
+          },
+          legend: {
+            position: 'top'
           }
         }
       }
-    }
+    });
   </script>
+
 </body>
 </html>
