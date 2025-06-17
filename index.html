@@ -2,80 +2,111 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Desigualdad Lineal con Gráfica</title>
+  <title>Desigualdades con Gráfica</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     body { font-family: Arial; padding: 20px; }
-    canvas { max-width: 600px; }
+    input, select, button { margin: 5px 0; padding: 5px; width: 100%; max-width: 300px; }
+    canvas { margin-top: 20px; max-width: 600px; }
   </style>
 </head>
 <body>
+  <h2>Resolver Desigualdades</h2>
 
-  <h2>Resolver: 2x + 6 < 8</h2>
-  <p>Solución: Restamos 6 a ambos lados ⇒ 2x < 2 ⇒ x < 1</p>
-  <h3>Gráfica de la desigualdad</h3>
+  <label for="tipo">Tipo de desigualdad:</label><br>
+  <select id="tipo">
+    <option value="lineal">Lineal (ax + b < c)</option>
+  </select><br>
+
+  <label for="a">Coeficiente a:</label><br>
+  <input type="number" id="a" value="2"><br>
+
+  <label for="b">Coeficiente b:</label><br>
+  <input type="number" id="b" value="6"><br>
+
+  <label for="c">Término c:</label><br>
+  <input type="number" id="c" value="8"><br>
+
+  <button onclick="resolver()">Calcular</button>
+
+  <h3>Resultado:</h3>
+  <p id="resultado"></p>
 
   <canvas id="grafica" width="600" height="400"></canvas>
 
   <script>
-    const ctx = document.getElementById('grafica').getContext('2d');
+    let chart;
 
-    // Valores del eje x
-    const xValores = [];
-    for (let x = -5; x <= 7; x += 0.1) {
-      xValores.push(x);
-    }
+    function resolver() {
+      const a = parseFloat(document.getElementById("a").value);
+      const b = parseFloat(document.getElementById("b").value);
+      const c = parseFloat(document.getElementById("c").value);
+      const resultado = document.getElementById("resultado");
 
-    // y = 2x + 6
-    const y1 = xValores.map(x => 2 * x + 6);
+      const xSolucion = (c - b) / a;
+      const signo = a > 0 ? "<" : ">";
+      resultado.innerHTML = `Solución: x ${signo} ${xSolucion.toFixed(2)}`;
 
-    // y = 8 (línea límite de la desigualdad)
-    const y2 = xValores.map(() => 8);
+      // Preparar valores para graficar
+      const xValores = [];
+      const yValores = [];
+      const yLimite = [];
 
-    new Chart(ctx, {
-      type: 'line',
-      data: {
-        labels: xValores,
-        datasets: [
-          {
-            label: 'y = 2x + 6',
-            data: y1,
-            borderColor: 'blue',
-            borderWidth: 2,
-            fill: false,
-          },
-          {
-            label: 'y = 8',
-            data: y2,
-            borderColor: 'red',
-            borderWidth: 2,
-            borderDash: [5, 5],
-            fill: false,
-          }
-        ]
-      },
-      options: {
-        responsive: true,
-        scales: {
-          x: {
-            title: { display: true, text: 'x' }
-          },
-          y: {
-            title: { display: true, text: 'y' }
-          }
+      for (let x = xSolucion - 5; x <= xSolucion + 5; x += 0.1) {
+        xValores.push(x);
+        yValores.push(a * x + b);
+        yLimite.push(c);
+      }
+
+      // Si ya existe un gráfico anterior, destruirlo antes de crear uno nuevo
+      if (chart) {
+        chart.destroy();
+      }
+
+      const ctx = document.getElementById('grafica').getContext('2d');
+      chart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: xValores,
+          datasets: [
+            {
+              label: 'y = ax + b',
+              data: yValores,
+              borderColor: 'blue',
+              borderWidth: 2,
+              fill: false
+            },
+            {
+              label: 'y = c',
+              data: yLimite,
+              borderColor: 'red',
+              borderDash: [5, 5],
+              borderWidth: 2,
+              fill: false
+            }
+          ]
         },
-        plugins: {
-          title: {
-            display: true,
-            text: 'Gráfica de la desigualdad 2x + 6 < 8'
+        options: {
+          scales: {
+            x: {
+              title: { display: true, text: 'x' }
+            },
+            y: {
+              title: { display: true, text: 'y' }
+            }
           },
-          legend: {
-            position: 'top'
+          plugins: {
+            title: {
+              display: true,
+              text: `Gráfica de: ${a}x + ${b} < ${c}`
+            },
+            legend: {
+              position: 'top'
+            }
           }
         }
-      }
-    });
+      });
+    }
   </script>
-
 </body>
 </html>
