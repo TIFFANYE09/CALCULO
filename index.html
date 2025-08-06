@@ -2,106 +2,200 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Calculadora de Derivadas</title>
+
+  <!-- Librerías -->
   <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
   <script src="https://cdn.jsdelivr.net/npm/mathjs@11/lib/browser/math.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
   <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+  <!-- Estilos -->
   <style>
-    body { font-family: Arial; padding: 20px; }
-    input, button { padding: 10px; margin-top: 10px; width: 100%; }
-    .output { margin-top: 20px; }
-    #graph { width: 100%; height: 400px; }
-    #contentToDownload { border: 1px solid #ccc; padding: 20px; margin-top: 20px; }
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f5f7fa;
+      color: #333;
+      padding: 20px;
+      margin: 0;
+    }
+
+    h1, h2, h3 {
+      color: #2c3e50;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: auto;
+      background-color: #fff;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 600;
+    }
+
+    input {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      font-size: 16px;
+    }
+
+    button {
+      padding: 12px 20px;
+      background-color: #3498db;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+      margin-right: 10px;
+    }
+
+    button:hover {
+      background-color: #2980b9;
+    }
+
+    .output {
+      margin-top: 30px;
+    }
+
+    .section {
+      margin-bottom: 30px;
+    }
+
+    #graph {
+      width: 100%;
+      height: 400px;
+    }
+
+    .footer {
+      text-align: center;
+      margin-top: 50px;
+      font-size: 14px;
+      color: #aaa;
+    }
+
+    @media (max-width: 600px) {
+      button {
+        width: 100%;
+        margin-bottom: 10px;
+      }
+    }
   </style>
 </head>
+
 <body>
-  <h2>Calculadora de Derivadas</h2>
-  <label for="funcion">Ingresa la función (ejemplo: x^2 + 3x):</label>
-  <input type="text" id="funcion" placeholder="f(x) =" />
+  <div class="container" id="contentToDownload">
+    <h1>🧮 Calculadora de Derivadas</h1>
+    <p>Ingresa una función y obtén su derivada con explicación paso a paso y gráfica incluida.</p>
 
-  <button onclick="resolver()">Resolver Derivada</button>
-  <button onclick="descargarPDF()">Descargar Resultado</button>
+    <label for="funcion">Función (por ejemplo: <code>x^2 + 3x</code>):</label>
+    <input type="text" id="funcion" placeholder="f(x) =">
 
-  <div id="contentToDownload">
+    <button onclick="resolver()">Resolver Derivada</button>
+    <button onclick="descargarPDF()">Descargar Resultado</button>
+
     <div class="output">
-      <h3>Proceso largo (definición con límite)</h3>
-      <div id="procesoLargo"></div>
+      <div class="section">
+        <h3>📘 Proceso largo (definición con límite)</h3>
+        <div id="procesoLargo"></div>
+      </div>
 
-      <h3>Proceso corto (regla de derivación)</h3>
-      <div id="procesoCorto"></div>
+      <div class="section">
+        <h3>✏️ Proceso corto (regla de derivación)</h3>
+        <div id="procesoCorto"></div>
+      </div>
 
-      <h3>Fórmula General (si aplica)</h3>
-      <div id="formulaGeneral"></div>
+      <div class="section">
+        <h3>📐 Fórmula General (si aplica)</h3>
+        <div id="formulaGeneral"></div>
+      </div>
 
-      <h3>Gráfica de f(x) y f'(x)</h3>
-      <div id="graph"></div>
+      <div class="section">
+        <h3>📊 Gráfica de f(x) y f'(x)</h3>
+        <div id="graph"></div>
+      </div>
     </div>
   </div>
 
+  <div class="footer">
+    Desarrollado por Tiffany 💙
+  </div>
+
+  <!-- JavaScript -->
   <script>
     function resolver() {
       const expr = document.getElementById("funcion").value;
-      const scope = { x: 1 };
 
       try {
-        // Derivada con math.js
         const derivada = math.derivative(expr, 'x').toString();
 
-        // Proceso largo (definición del límite)
+        // Proceso largo
         const procesoLargo = `
-        \\[
-          f'(x) = \\lim_{h \\to 0} \\frac{f(x+h) - f(x)}{h} = 
-          \\lim_{h \\to 0} \\frac{(${expr.replace(/x/g, '(x+h)')}) - (${expr})}{h}
-        \\]
+          \\[
+            f'(x) = \\lim_{h \\to 0} \\frac{f(x+h) - f(x)}{h} = 
+            \\lim_{h \\to 0} \\frac{(${expr.replace(/x/g, '(x+h)')}) - (${expr})}{h}
+          \\]
         `;
 
-        // Proceso corto (simplificado)
+        // Proceso corto
         const procesoCorto = `
-        \\[
-          f'(x) = ${math.simplify(derivada).toTex()}
-        \\]
+          \\[
+            f'(x) = ${math.simplify(derivada).toTex()}
+          \\]
         `;
 
-        // Fórmula general (ejemplo si es potencia)
+        // Fórmula general si es potencia
         let formulaGeneral = "";
         if (/x\^\d/.test(expr)) {
           formulaGeneral = `
-          \\[
-            \\text{Regla de la potencia: } \\frac{d}{dx}(x^n) = nx^{n-1}
-          \\]`;
+            \\[
+              \\text{Regla de la potencia: } \\frac{d}{dx}(x^n) = nx^{n-1}
+            \\]`;
         }
 
-        // Mostrar resultados
         document.getElementById("procesoLargo").innerHTML = procesoLargo;
         document.getElementById("procesoCorto").innerHTML = procesoCorto;
         document.getElementById("formulaGeneral").innerHTML = formulaGeneral;
+
         MathJax.typeset();
 
-        // Gráfica
         graficar(expr, derivada);
       } catch (err) {
-        alert("Error en la función. Revisa la sintaxis.");
+        alert("⚠️ Error en la función. Asegúrate de escribirla correctamente.");
       }
     }
 
     function graficar(funcion, derivada) {
-      const x = math.range(-10, 10, 0.5).toArray();
+      const x = math.range(-10, 10, 0.2).toArray();
       const f = x.map(val => math.evaluate(funcion, { x: val }));
       const df = x.map(val => math.evaluate(derivada, { x: val }));
 
       const data = [
-        {
-          x, y: f, mode: 'lines', name: 'f(x)'
-        },
-        {
-          x, y: df, mode: 'lines', name: "f'(x)"
-        }
+        { x, y: f, mode: 'lines', name: 'f(x)', line: { color: '#27ae60' } },
+        { x, y: df, mode: 'lines', name: "f'(x)", line: { color: '#e74c3c' } }
       ];
 
       Plotly.newPlot('graph', data, {
-        margin: { t: 0 }, xaxis: { title: 'x' }, yaxis: { title: 'y' }
+        margin: { t: 30 },
+        xaxis: { title: 'x' },
+        yaxis: { title: 'y' },
+        plot_bgcolor: '#f9f9f9',
+        paper_bgcolor: '#fff'
       });
     }
 
