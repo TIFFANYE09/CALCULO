@@ -1,111 +1,113 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <title>Desigualdades con Gráfica</title>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <meta charset="UTF-8" />
+  <title>Calculadora de Derivadas</title>
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjs@11/lib/browser/math.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <style>
     body { font-family: Arial; padding: 20px; }
-    input, select, button { margin: 5px 0; padding: 5px; width: 100%; max-width: 300px; }
-    canvas { margin-top: 20px; max-width: 600px; }
+    input, button { padding: 10px; margin-top: 10px; width: 100%; }
+    .output { margin-top: 20px; }
+    #graph { width: 100%; height: 400px; }
+    #contentToDownload { border: 1px solid #ccc; padding: 20px; margin-top: 20px; }
   </style>
 </head>
 <body>
-  <h2>Resolver Desigualdades</h2>
+  <h2>Calculadora de Derivadas</h2>
+  <label for="funcion">Ingresa la función (ejemplo: x^2 + 3x):</label>
+  <input type="text" id="funcion" placeholder="f(x) =" />
 
-  <label for="tipo">Tipo de desigualdad:</label><br>
-  <select id="tipo">
-    <option value="lineal">Lineal (ax + b < c)</option>
-  </select><br>
+  <button onclick="resolver()">Resolver Derivada</button>
+  <button onclick="descargarPDF()">Descargar Resultado</button>
 
-  <label for="a">Coeficiente a:</label><br>
-  <input type="number" id="a" value="2"><br>
+  <div id="contentToDownload">
+    <div class="output">
+      <h3>Proceso largo (definición con límite)</h3>
+      <div id="procesoLargo"></div>
 
-  <label for="b">Coeficiente b:</label><br>
-  <input type="number" id="b" value="6"><br>
+      <h3>Proceso corto (regla de derivación)</h3>
+      <div id="procesoCorto"></div>
 
-  <label for="c">Término c:</label><br>
-  <input type="number" id="c" value="8"><br>
+      <h3>Fórmula General (si aplica)</h3>
+      <div id="formulaGeneral"></div>
 
-  <button onclick="resolver()">Calcular</button>
-
-  <h3>Resultado:</h3>
-  <p id="resultado"></p>
-
-  <canvas id="grafica" width="600" height="400"></canvas>
+      <h3>Gráfica de f(x) y f'(x)</h3>
+      <div id="graph"></div>
+    </div>
+  </div>
 
   <script>
-    let chart;
-
     function resolver() {
-      const a = parseFloat(document.getElementById("a").value);
-      const b = parseFloat(document.getElementById("b").value);
-      const c = parseFloat(document.getElementById("c").value);
-      const resultado = document.getElementById("resultado");
+      const expr = document.getElementById("funcion").value;
+      const scope = { x: 1 };
 
-      const xSolucion = (c - b) / a;
-      const signo = a > 0 ? "<" : ">";
-      resultado.innerHTML = `Solución: x ${signo} ${xSolucion.toFixed(2)}`;
+      try {
+        // Derivada con math.js
+        const derivada = math.derivative(expr, 'x').toString();
 
-      // Preparar valores para graficar
-      const xValores = [];
-      const yValores = [];
-      const yLimite = [];
+        // Proceso largo (definición del límite)
+        const procesoLargo = `
+        \\[
+          f'(x) = \\lim_{h \\to 0} \\frac{f(x+h) - f(x)}{h} = 
+          \\lim_{h \\to 0} \\frac{(${expr.replace(/x/g, '(x+h)')}) - (${expr})}{h}
+        \\]
+        `;
 
-      for (let x = xSolucion - 5; x <= xSolucion + 5; x += 0.1) {
-        xValores.push(x);
-        yValores.push(a * x + b);
-        yLimite.push(c);
-      }
+        // Proceso corto (simplificado)
+        const procesoCorto = `
+        \\[
+          f'(x) = ${math.simplify(derivada).toTex()}
+        \\]
+        `;
 
-      // Si ya existe un gráfico anterior, destruirlo antes de crear uno nuevo
-      if (chart) {
-        chart.destroy();
-      }
-
-      const ctx = document.getElementById('grafica').getContext('2d');
-      chart = new Chart(ctx, {
-        type: 'line',
-        data: {
-          labels: xValores,
-          datasets: [
-            {
-              label: 'y = ax + b',
-              data: yValores,
-              borderColor: 'blue',
-              borderWidth: 2,
-              fill: false
-            },
-            {
-              label: 'y = c',
-              data: yLimite,
-              borderColor: 'red',
-              borderDash: [5, 5],
-              borderWidth: 2,
-              fill: false
-            }
-          ]
-        },
-        options: {
-          scales: {
-            x: {
-              title: { display: true, text: 'x' }
-            },
-            y: {
-              title: { display: true, text: 'y' }
-            }
-          },
-          plugins: {
-            title: {
-              display: true,
-              text: `Gráfica de: ${a}x + ${b} < ${c}`
-            },
-            legend: {
-              position: 'top'
-            }
-          }
+        // Fórmula general (ejemplo si es potencia)
+        let formulaGeneral = "";
+        if (/x\^\d/.test(expr)) {
+          formulaGeneral = `
+          \\[
+            \\text{Regla de la potencia: } \\frac{d}{dx}(x^n) = nx^{n-1}
+          \\]`;
         }
+
+        // Mostrar resultados
+        document.getElementById("procesoLargo").innerHTML = procesoLargo;
+        document.getElementById("procesoCorto").innerHTML = procesoCorto;
+        document.getElementById("formulaGeneral").innerHTML = formulaGeneral;
+        MathJax.typeset();
+
+        // Gráfica
+        graficar(expr, derivada);
+      } catch (err) {
+        alert("Error en la función. Revisa la sintaxis.");
+      }
+    }
+
+    function graficar(funcion, derivada) {
+      const x = math.range(-10, 10, 0.5).toArray();
+      const f = x.map(val => math.evaluate(funcion, { x: val }));
+      const df = x.map(val => math.evaluate(derivada, { x: val }));
+
+      const data = [
+        {
+          x, y: f, mode: 'lines', name: 'f(x)'
+        },
+        {
+          x, y: df, mode: 'lines', name: "f'(x)"
+        }
+      ];
+
+      Plotly.newPlot('graph', data, {
+        margin: { t: 0 }, xaxis: { title: 'x' }, yaxis: { title: 'y' }
       });
+    }
+
+    function descargarPDF() {
+      const element = document.getElementById("contentToDownload");
+      html2pdf().from(element).save("resultado_derivada.pdf");
     }
   </script>
 </body>
