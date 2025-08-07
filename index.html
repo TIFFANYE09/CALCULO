@@ -1,221 +1,147 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Calculadora de Derivadas</title>
+<meta charset="UTF-8">
+<title>Derivada paso a paso</title>
 
-  <!-- Librerías externas -->
-  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
-  <script src="https://cdn.jsdelivr.net/npm/mathjs@11/lib/browser/math.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
-  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<!-- MathJax para fórmulas -->
+<script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+<script id="MathJax-script" async
+  src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 
-  <!-- ESTILO MODERNO -->
-  <style>
-    * {
-      box-sizing: border-box;
-    }
+<!-- Plotly para gráficas -->
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 
-    body {
-      margin: 0;
-      font-family: 'Segoe UI', sans-serif;
-      background: #f0f2f5;
-      color: #333;
-      padding: 30px;
-    }
+<!-- math.js para cálculos -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.8.0/math.min.js"></script>
 
-    .container {
-      max-width: 900px;
-      margin: auto;
-      background: #fff;
-      padding: 40px;
-      border-radius: 20px;
-      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
-    }
-
-    h1 {
-      text-align: center;
-      color: #2c3e50;
-      font-size: 32px;
-      margin-bottom: 10px;
-    }
-
-    p {
-      text-align: center;
-      color: #555;
-      margin-bottom: 30px;
-    }
-
-    label {
-      font-weight: bold;
-      font-size: 18px;
-    }
-
-    input[type="text"] {
-      width: 100%;
-      padding: 14px;
-      margin-top: 10px;
-      margin-bottom: 20px;
-      font-size: 16px;
-      border-radius: 12px;
-      border: 1px solid #ccc;
-      box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05);
-    }
-
-    button {
-      padding: 14px 20px;
-      font-size: 16px;
-      margin: 10px 5px 20px 0;
-      border: none;
-      border-radius: 12px;
-      background-color: #3498db;
-      color: white;
-      cursor: pointer;
-      transition: background-color 0.3s ease;
-    }
-
-    button:hover {
-      background-color: #2980b9;
-    }
-
-    .section {
-      margin-top: 40px;
-    }
-
-    .section h3 {
-      color: #34495e;
-      margin-bottom: 10px;
-    }
-
-    #graph {
-      margin-top: 20px;
-      width: 100%;
-      height: 400px;
-    }
-
-    .footer {
-      text-align: center;
-      color: #aaa;
-      margin-top: 50px;
-      font-size: 14px;
-    }
-
-    @media (max-width: 600px) {
-      button {
-        width: 100%;
-      }
-
-      input {
-        font-size: 14px;
-      }
-    }
-  </style>
+<style>
+body { font-family: Arial, sans-serif; margin: 20px; }
+h1 { text-align: center; }
+input, button { padding: 8px; margin: 5px; }
+.resultado { background: #f4f4f4; padding: 15px; border-radius: 8px; margin-top: 15px; }
+table { border-collapse: collapse; margin-top: 10px; }
+th, td { border: 1px solid #ccc; padding: 5px; text-align: center; }
+</style>
 </head>
-
 <body>
-  <div class="container" id="contentToDownload">
-    <h1>🧮 Calculadora de Derivadas</h1>
-    <p>Obtén la derivada paso a paso, con límite, proceso corto y gráfica.</p>
 
-    <label for="funcion">Escribe tu función:</label>
-    <input type="text" id="funcion" placeholder="Ej: x^2 + 3x">
+<h1>📘 Derivada usando la fórmula del límite</h1>
+<p>Introduce la función \(f(x)\):</p>
+<input type="text" id="funcion" value="x^2 + 3*x + 2" size="30">
+<p>Introduce el punto \(x_0\) para el ejemplo numérico:</p>
+<input type="number" id="x0" value="2" step="any">
+<button onclick="calcular()">Calcular derivada</button>
 
-    <button onclick="resolver()">Resolver Derivada</button>
-    <button onclick="descargarPDF()">Descargar Resultado</button>
+<div class="resultado" id="explicacion"></div>
+<div class="resultado" id="tablaNumerica"></div>
+<div id="grafica" style="width:100%;height:500px;"></div>
 
-    <div class="section">
-      <h3>📘 Proceso largo (definición con límite)</h3>
-      <div id="procesoLargo"></div>
-    </div>
+<script>
+function calcular() {
+    const funcionStr = document.getElementById("funcion").value;
+    const x0 = parseFloat(document.getElementById("x0").value);
 
-    <div class="section">
-      <h3>✏️ Proceso corto (regla de derivación)</h3>
-      <div id="procesoCorto"></div>
-    </div>
+    try {
+        const parser = math.parser();
+        parser.evaluate(`f(x) = ${funcionStr}`);
 
-    <div class="section">
-      <h3>📐 Fórmula General (si aplica)</h3>
-      <div id="formulaGeneral"></div>
-    </div>
+        let pasos = "";
 
-    <div class="section">
-      <h3>📊 Gráfica de f(x) y f'(x)</h3>
-      <div id="graph"></div>
-    </div>
-  </div>
+        // Paso 1: Fórmula
+        pasos += `<b>1️⃣ Fórmula general:</b><br>`;
+        pasos += `\\[
+        f'(x) = \\lim_{h \\to 0} \\frac{f(x+h) - f(x)}{h}
+        \\]<br><br>`;
 
-  <div class="footer">
-    Hecho con 💙 por Tiffany
-  </div>
+        // Paso 2: Sustitución
+        const f_xh_str = funcionStr.replace(/x/g, "(x+h)");
+        pasos += `<b>2️⃣ Sustituimos f(x):</b><br>`;
+        pasos += `\\[
+        f'(x) = \\lim_{h \\to 0} \\frac{${f_xh_str} - (${funcionStr})}{h}
+        \\]<br><br>`;
 
-  <script>
-    function resolver() {
-      const expr = document.getElementById("funcion").value;
+        // Paso 3: Simplificar numerador
+        const exprOriginal = math.parse(funcionStr);
+        const exprXh = math.parse(f_xh_str);
+        const numerador = math.simplify(`(${exprXh}) - (${exprOriginal})`);
+        pasos += `<b>3️⃣ Simplificamos el numerador:</b><br>`;
+        pasos += `\\[
+        ${numerador.toString()}
+        \\]<br><br>`;
 
-      try {
-        const derivada = math.derivative(expr, 'x').toString();
+        // Paso 4: Dividir entre h
+        const cociente = math.simplify(`(${numerador}) / h`);
+        pasos += `<b>4️⃣ Dividimos todo entre h:</b><br>`;
+        pasos += `\\[
+        ${cociente.toString()}
+        \\]<br><br>`;
 
-        // Proceso largo
-        const procesoLargo = `
-          \\[
-            f'(x) = \\lim_{h \\to 0} \\frac{f(x+h) - f(x)}{h} = 
-            \\lim_{h \\to 0} \\frac{(${expr.replace(/x/g, '(x+h)')}) - (${expr})}{h}
-          \\]
-        `;
+        // Paso 5: Aplicar límite h->0
+        const derivada = math.simplify(cociente.toString().replace(/h/g, "0"));
+        pasos += `<b>5️⃣ Límite cuando h → 0:</b><br>`;
+        pasos += `\\[
+        f'(x) = ${derivada.toString()}
+        \\]<br><br>`;
 
-        // Proceso corto
-        const procesoCorto = `
-          \\[
-            f'(x) = ${math.simplify(derivada).toTex()}
-          \\]
-        `;
-
-        // Fórmula general si es potencia
-        let formulaGeneral = "";
-        if (/x\^\d/.test(expr)) {
-          formulaGeneral = `
-            \\[
-              \\text{Regla de la potencia: } \\frac{d}{dx}(x^n) = nx^{n-1}
-            \\]`;
-        }
-
-        document.getElementById("procesoLargo").innerHTML = procesoLargo;
-        document.getElementById("procesoCorto").innerHTML = procesoCorto;
-        document.getElementById("formulaGeneral").innerHTML = formulaGeneral;
-
+        document.getElementById("explicacion").innerHTML = pasos;
         MathJax.typeset();
 
-        graficar(expr, derivada);
-      } catch (err) {
-        alert("⚠️ Error en la función. Asegúrate de escribirla bien (por ejemplo: x^2 + 3x).");
-      }
+        // --- Ejemplo numérico ---
+        let tabla = `<b>📊 Ejemplo numérico en x₀ = ${x0}:</b><br><table><tr><th>h</th><th>(f(x₀+h) - f(x₀))/h</th></tr>`;
+        let hs = [1, 0.5, 0.1, 0.01, 0.001];
+        hs.forEach(h => {
+            let val = (parser.evaluate(`f(${x0}+${h})`) - parser.evaluate(`f(${x0})`)) / h;
+            tabla += `<tr><td>${h}</td><td>${val.toFixed(6)}</td></tr>`;
+        });
+        tabla += "</table>";
+        document.getElementById("tablaNumerica").innerHTML = tabla;
+
+        // --- Gráfica con animación ---
+        const f = (x) => parser.evaluate(`f(${x})`);
+        const df = (x) => parser.evaluate(derivada.toString().replace(/x/g, `(${x})`));
+
+        let xs = [], ys1 = [], ys2 = [];
+        for (let xi = -10; xi <= 10; xi += 0.1) {
+            xs.push(xi);
+            ys1.push(f(xi));
+            ys2.push(df(xi));
+        }
+
+        // Puntos para secante y tangente
+        let hAnim = 2; // empezamos con h grande
+        let secX = [x0, x0 + hAnim];
+        let secY = [f(x0), f(x0 + hAnim)];
+
+        const trace1 = { x: xs, y: ys1, type: 'scatter', name: 'f(x)' };
+        const trace2 = { x: xs, y: ys2, type: 'scatter', name: "f'(x)" };
+        const secante = { x: secX, y: secY, type: 'scatter', mode: 'lines', name: 'Secante', line: { dash: 'dot', color: 'red' } };
+        const punto = { x: [x0], y: [f(x0)], type: 'scatter', mode: 'markers', name: 'Punto x₀', marker: { size: 8, color: 'black' } };
+
+        Plotly.newPlot('grafica', [trace1, trace2, secante, punto], {
+            title: 'Función, derivada y recta secante → tangente',
+            xaxis: { title: 'x' },
+            yaxis: { title: 'Valor' }
+        });
+
+        // Animación: reducir h
+        let step = 0;
+        let interval = setInterval(() => {
+            if (hAnim > 0.05) {
+                hAnim *= 0.7;
+                secX = [x0, x0 + hAnim];
+                secY = [f(x0), f(x0 + hAnim)];
+                Plotly.update('grafica', { x: [xs, xs, secX, [x0]], y: [ys1, ys2, secY, [f(x0)]] });
+            } else {
+                clearInterval(interval);
+            }
+        }, 800);
+
+    } catch (err) {
+        document.getElementById("explicacion").innerHTML = `<b>Error:</b> Verifica que la función esté bien escrita.`;
     }
+}
+</script>
 
-    function graficar(funcion, derivada) {
-      const x = math.range(-10, 10, 0.2).toArray();
-      const f = x.map(val => math.evaluate(funcion, { x: val }));
-      const df = x.map(val => math.evaluate(derivada, { x: val }));
-
-      const data = [
-        { x, y: f, mode: 'lines', name: 'f(x)', line: { color: '#27ae60' } },
-        { x, y: df, mode: 'lines', name: "f'(x)", line: { color: '#e74c3c' } }
-      ];
-
-      Plotly.newPlot('graph', data, {
-        margin: { t: 20 },
-        xaxis: { title: 'x' },
-        yaxis: { title: 'y' },
-        plot_bgcolor: '#f9f9f9',
-        paper_bgcolor: '#fff'
-      });
-    }
-
-    function descargarPDF() {
-      const element = document.getElementById("contentToDownload");
-      html2pdf().from(element).save("resultado_derivada.pdf");
-    }
-  </script>
 </body>
 </html>
